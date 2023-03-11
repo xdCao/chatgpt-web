@@ -1,11 +1,9 @@
 import * as dotenv from 'dotenv'
 import 'isomorphic-fetch'
 import type { ChatGPTAPIOptions, ChatMessage, SendMessageOptions } from 'chatgpt'
-import { ChatGPTAPI, ChatGPTUnofficialProxyAPI } from 'chatgpt'
-import { SocksProxyAgent } from 'socks-proxy-agent'
-import fetch from 'node-fetch'
+import { ChatGPTAPI } from 'chatgpt'
 import { sendResponse } from '../utils'
-import type { ApiModel, ChatContext, ChatGPTUnofficialProxyAPIOptions, ModelConfig } from '../types'
+import type { ApiModel, ChatContext, ModelConfig } from '../types'
 
 const ErrorCodeMessage: Record<string, string> = {
   401: '[OpenAI] 提供错误的API密钥 | Incorrect API key provided',
@@ -25,70 +23,52 @@ let apiModel: ApiModel
 if (!process.env.OPENAI_API_KEY && !process.env.OPENAI_ACCESS_TOKEN)
   throw new Error('Missing OPENAI_API_KEY or OPENAI_ACCESS_TOKEN environment variable')
 
-let api: ChatGPTAPI | ChatGPTUnofficialProxyAPI
+let api: ChatGPTAPI
 
 (async () => {
   // More Info: https://github.com/transitive-bullshit/chatgpt-api
 
-  if (process.env.OPENAI_API_KEY) {
-    const OPENAI_API_MODEL = process.env.OPENAI_API_MODEL
-    const model = (typeof OPENAI_API_MODEL === 'string' && OPENAI_API_MODEL.length > 0)
-      ? OPENAI_API_MODEL
-      : 'gpt-3.5-turbo'
+  // else {
+  //   const options: ChatGPTUnofficialProxyAPIOptions = {
+  //     accessToken: process.env.OPENAI_ACCESS_TOKEN,
+  //     debug: false,
+  //   }
 
-    const options: ChatGPTAPIOptions = {
-      apiKey: process.env.OPENAI_API_KEY,
-      completionParams: { model },
-      debug: false,
-    }
+  //   if (process.env.SOCKS_PROXY_HOST && process.env.SOCKS_PROXY_PORT) {
+  //     const agent = new SocksProxyAgent({
+  //       hostname: process.env.SOCKS_PROXY_HOST,
+  //       port: process.env.SOCKS_PROXY_PORT,
+  //     })
+  //     options.fetch = (url, options) => {
+  //       return fetch(url, { agent, ...options })
+  //     }
+  //   }
 
-    if (process.env.OPENAI_API_BASE_URL && process.env.OPENAI_API_BASE_URL.trim().length > 0)
-      options.apiBaseUrl = process.env.OPENAI_API_BASE_URL
+  //   if (process.env.API_REVERSE_PROXY)
+  //     options.apiReverseProxyUrl = process.env.API_REVERSE_PROXY
 
-    if (process.env.SOCKS_PROXY_HOST && process.env.SOCKS_PROXY_PORT) {
-      const agent = new SocksProxyAgent({
-        hostname: process.env.SOCKS_PROXY_HOST,
-        port: process.env.SOCKS_PROXY_PORT,
-      })
-      options.fetch = (url, options) => {
-        return fetch(url, { agent, ...options })
-      }
-    }
-
-    api = new ChatGPTAPI({ ...options })
-    apiModel = 'ChatGPTAPI'
-  }
-  else {
-    const options: ChatGPTUnofficialProxyAPIOptions = {
-      accessToken: process.env.OPENAI_ACCESS_TOKEN,
-      debug: false,
-    }
-
-    if (process.env.SOCKS_PROXY_HOST && process.env.SOCKS_PROXY_PORT) {
-      const agent = new SocksProxyAgent({
-        hostname: process.env.SOCKS_PROXY_HOST,
-        port: process.env.SOCKS_PROXY_PORT,
-      })
-      options.fetch = (url, options) => {
-        return fetch(url, { agent, ...options })
-      }
-    }
-
-    if (process.env.API_REVERSE_PROXY)
-      options.apiReverseProxyUrl = process.env.API_REVERSE_PROXY
-
-    api = new ChatGPTUnofficialProxyAPI({ ...options })
-    apiModel = 'ChatGPTUnofficialProxyAPI'
-  }
+  //   api = new ChatGPTUnofficialProxyAPI({ ...options })
+  //   apiModel = 'ChatGPTUnofficialProxyAPI'
+  // }
 })()
 
 async function chatReplyProcess(
   message: string,
-  lastContext?: { conversationId?: string; parentMessageId?: string },
+  lastContext?: { conversationId?: string; parentMessageId?: string; openApiKey?: string },
   process?: (chat: ChatMessage) => void,
 ) {
   // if (!message)
   //   return sendResponse({ type: 'Fail', message: 'Message is empty' })
+  const model = 'gpt-3.5-turbo'
+
+  const options: ChatGPTAPIOptions = {
+    apiKey: lastContext.openApiKey,
+    completionParams: { model },
+    debug: false,
+  }
+
+  api = new ChatGPTAPI({ ...options })
+  apiModel = 'ChatGPTAPI'
 
   try {
     let options: SendMessageOptions = { timeoutMs }
