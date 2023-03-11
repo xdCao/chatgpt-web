@@ -3,7 +3,7 @@ import { post } from '@/utils/request'
 
 export function fetchChatAPI<T = any>(
   prompt: string,
-  options?: { conversationId?: string; parentMessageId?: string },
+  options?: { conversationId?: string; parentMessageId?: string; customApiKey?: string },
   signal?: GenericAbortSignal,
 ) {
   return post<T>({
@@ -22,7 +22,7 @@ export function fetchChatConfig<T = any>() {
 export function fetchChatAPIProcess<T = any>(
   params: {
     prompt: string
-    options?: { conversationId?: string; parentMessageId?: string }
+    options?: { conversationId?: string; parentMessageId?: string; customApiKey?: string }
     signal?: GenericAbortSignal
     onDownloadProgress?: (progressEvent: AxiosProgressEvent) => void },
 ) {

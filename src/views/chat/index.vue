@@ -39,6 +39,7 @@ const dataSources = computed(() => chatStore.getChatByUuid(+uuid))
 const conversationList = computed(() => dataSources.value.filter(item => (!item.inversion && !item.error)))
 
 const prompt = ref<string>('')
+const customApiKey = ref<string>('')
 const loading = ref<boolean>(false)
 
 // 添加PromptStore
@@ -52,11 +53,15 @@ function handleSubmit() {
 
 async function onConversation() {
   let message = prompt.value
+  const apiKey = customApiKey.value
 
   if (loading.value)
     return
 
   if (!message || message.trim() === '')
+    return
+
+  if (!apiKey || apiKey.trim() === '')
     return
 
   controller = new AbortController()
@@ -77,7 +82,7 @@ async function onConversation() {
   loading.value = true
   prompt.value = ''
 
-  let options: Chat.ConversationRequest = {}
+  let options: Chat.ConversationRequest = { openApiKey: apiKey }
   const lastContext = conversationList.value[conversationList.value.length - 1]?.conversationOptions
 
   if (lastContext && usingContext.value)
@@ -425,6 +430,10 @@ const renderOption = (option: { label: string }) => {
   return []
 }
 
+const apiKeyPlaceHolder = computed(() => {
+  return t('chat.apiKeyPlaceHolder')
+})
+
 const placeholder = computed(() => {
   if (isMobile.value)
     return t('chat.placeholderMobile')
@@ -460,6 +469,25 @@ onUnmounted(() => {
       @export="handleExport"
       @toggle-using-context="toggleUsingContext"
     />
+
+    <!-- 填写api key -->
+    <div class="flex items-center justify-between space-x-2 p-4">
+      <NAutoComplete v-model:value="customApiKey" :options="searchOptions" :render-label="renderOption">
+        <template #default="{ handleInput, handleBlur, handleFocus }">
+          <NInput
+            v-model:value="customApiKey"
+            type="textarea"
+            :placeholder="apiKeyPlaceHolder"
+            :autosize="{ minRows: 1, maxRows: 2 }"
+            @input="handleInput"
+            @focus="handleFocus"
+            @blur="handleBlur"
+            @keypress="handleEnter"
+          />
+        </template>
+      </NAutoComplete>
+    </div>
+
     <main class="flex-1 overflow-hidden">
       <div
         id="scrollRef"
@@ -506,16 +534,19 @@ onUnmounted(() => {
     <footer :class="footerClass">
       <div class="w-full max-w-screen-xl m-auto">
         <div class="flex items-center justify-between space-x-2">
+          <!-- 清空会话 -->
           <HoverButton @click="handleClear">
             <span class="text-xl text-[#4f555e] dark:text-white">
               <SvgIcon icon="ri:delete-bin-line" />
             </span>
           </HoverButton>
+          <!-- 导出记录 -->
           <HoverButton v-if="!isMobile" @click="handleExport">
             <span class="text-xl text-[#4f555e] dark:text-white">
               <SvgIcon icon="ri:download-2-line" />
             </span>
           </HoverButton>
+          <!-- 是否携带上下文 -->
           <HoverButton v-if="!isMobile" @click="toggleUsingContext">
             <span class="text-xl" :class="{ 'text-[#4b9e5f]': usingContext, 'text-[#a8071a]': !usingContext }">
               <SvgIcon icon="ri:chat-history-line" />

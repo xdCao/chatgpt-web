@@ -18,6 +18,7 @@ export default {
   chat: {
     placeholder: 'Ask me anything...(Shift + Enter = line break)',
     placeholderMobile: 'Ask me anything...',
+    apiKeyPlaceHolder: 'fill your api key',
     copy: 'Copy',
     copied: 'Copied',
     copyCode: 'Copy Code',

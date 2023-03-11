@@ -18,6 +18,7 @@ export default {
   chat: {
     placeholder: '來說點什麼...（Shift + Enter = 換行）',
     placeholderMobile: '來說點什麼...',
+    apiKeyPlaceHolder: '填写你的apiKey',
     copy: '複製',
     copied: '複製成功',
     copyCode: '複製代碼',
