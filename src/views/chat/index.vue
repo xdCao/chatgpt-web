@@ -128,7 +128,8 @@ async function onConversation() {
                 inversion: false,
                 error: false,
                 loading: false,
-                conversationOptions: { conversationId: data.conversationId, parentMessageId: data.id },
+                // 这里要更新openApiKey
+                conversationOptions: { conversationId: data.conversationId, parentMessageId: data.id, openApiKey: apiKey },
                 requestOptions: { prompt: message, options: { ...options } },
               },
             )
