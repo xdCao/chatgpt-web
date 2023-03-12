@@ -472,20 +472,7 @@ onUnmounted(() => {
 
     <!-- 填写api key -->
     <div class="flex items-center justify-between space-x-2 p-4">
-      <NAutoComplete v-model:value="customApiKey" :options="searchOptions" :render-label="renderOption">
-        <template #default="{ handleInput, handleBlur, handleFocus }">
-          <NInput
-            v-model:value="customApiKey"
-            type="textarea"
-            :placeholder="apiKeyPlaceHolder"
-            :autosize="{ minRows: 1, maxRows: 2 }"
-            @input="handleInput"
-            @focus="handleFocus"
-            @blur="handleBlur"
-            @keypress="handleEnter"
-          />
-        </template>
-      </NAutoComplete>
+      <NInput v-model:value="customApiKey" type="textarea" :placeholder="apiKeyPlaceHolder" :autosize="{ minRows: 1, maxRows: 2 }" />
     </div>
 
     <main class="flex-1 overflow-hidden">
